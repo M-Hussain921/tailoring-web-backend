@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 
-exports.verifyAdminToken = (
+export const verifyToken = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -32,30 +32,10 @@ exports.verifyAdminToken = (
       role: string;
     };
 
-    req.Admin = decoded;
+    req.admin = decoded;
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid or expired token" });
     return;
   }
-};
-
-exports.isAdmin = (req: Request, res: Response, next: NextFunction): void => {
-  if (req.Admin?.role !== "admin") {
-    res.status(403).json({ message: "Access Denied" });
-    return;
-  }
-  next();
-};
-
-exports.isDeveloper = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void => {
-  if (req.Admin?.role !== "developer") {
-    res.status(403).json({ message: "Access Denied" });
-    return;
-  }
-  next();
 };

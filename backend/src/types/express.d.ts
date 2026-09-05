@@ -3,7 +3,7 @@ import "express";
 declare global {
   namespace Express {
     interface Request {
-      Admin?: {
+      admin?: {
         id: string;
         role: string;
       };
