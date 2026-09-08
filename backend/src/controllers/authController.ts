@@ -3,17 +3,26 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
 import { MongoServerError } from "mongodb";
+import type { RegisterInput, LoginInput } from "../validator/authValidator.js";
 
-export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, phoneNumber, password, role } = req.body;
+export const register = async (
+  req: Request<{}, {}, RegisterInput>,
+  res: Response,
+): Promise<void> => {
+  const { username, email, phoneNumber, password } = req.body;
 
   try {
     let existingUser = await User.findOne({
-      $or: [{ email: email }, { phoneNumber: phoneNumber }],
+      $or: [
+        { username: username },
+        { email: email },
+        { phoneNumber: phoneNumber },
+      ],
     });
     if (existingUser) {
       res.status(400).json({
-        message: "User with this email or phone number already exists",
+        message:
+          "User with this username, email or phone number already exists",
       });
       return;
     }
@@ -25,7 +34,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email,
       phoneNumber,
       password: hashedPassword,
-      role,
     });
 
     await newUser.save();
@@ -44,33 +52,35 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         username: newUser.username,
         email: newUser.email,
         phoneNumber: newUser.phoneNumber,
-        role: newUser.role,
       },
     });
   } catch (error: unknown) {
-  if (error instanceof MongoServerError && error.code === 11000) {
-    console.error("Duplicate role:", error['keyValue']);
+    if (error instanceof MongoServerError && error.code === 11000) {
+      console.error("Duplicate role:", error["keyValue"]);
 
-    res.status(409).json({
-      message: "This role is already assigned to another user",
+      res.status(409).json({
+        message: "This role is already assigned to another user",
+      });
+
+      return;
+    }
+
+    console.error("Unexpected registration error:", error);
+
+    res.status(500).json({
+      message: "Internal server error",
     });
-
-    return;
   }
-
-  console.error("Unexpected registration error:", error);
-
-  res.status(500).json({
-    message: "Internal server error",
-  });
-}
 };
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (
+  req: Request<{}, {}, LoginInput>,
+  res: Response,
+): Promise<void> => {
   const { identifier, password } = req.body;
   try {
     let user = await User.findOne({
-      $or: [{ email: identifier }, { phoneNumber: identifier }],
+      $or: [{ email: identifier }, { phoneNumber: identifier }, { username: identifier }],
     });
     if (!user) {
       res.status(400).json({ message: "User not found" });
