@@ -61,5 +61,12 @@ export const updateServicesSchema = createServicesSchema
   error: "At least one field must be provided for update",
 });
 
+export const serviceIdSchema = z.object({
+  id: z.string().regex(/^[a-f\d]{24}$/i, {
+    error: "Invalid service ID",
+  }),
+});
+
 export type CreateServiceInput = z.infer<typeof createServicesSchema>;
 export type UpdateServiceInput = z.infer<typeof updateServicesSchema>;
+export type ServiceIdInput = z.infer<typeof serviceIdSchema>;

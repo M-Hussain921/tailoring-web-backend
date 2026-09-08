@@ -59,6 +59,10 @@ const ServiceSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    deactivatedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

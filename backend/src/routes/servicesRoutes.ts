@@ -1,10 +1,18 @@
 import express from "express";
-import { createService,updateService } from "../controllers/servicesController.js";
+import {
+  createService,
+  updateService,
+  deleteService,
+} from "../controllers/servicesController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 
 import { validateRequest } from "../middleware/validateMiddleware.js";
-import { createServicesSchema,updateServicesSchema } from "../validator/servicesValidator.js";
+import {
+  createServicesSchema,
+  updateServicesSchema,
+  serviceIdSchema,
+} from "../validator/servicesValidator.js";
 
 const router = express.Router();
 
@@ -22,6 +30,14 @@ router.put(
   isAdmin,
   validateRequest(updateServicesSchema),
   updateService,
-)
+);
+
+router.delete(
+  "/delete-service/:id",
+  verifyToken,
+  isAdmin,
+  validateRequest(serviceIdSchema),
+  deleteService,
+);
 
 export default router;
