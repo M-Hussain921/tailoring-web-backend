@@ -55,4 +55,11 @@ export const createServicesSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const updateServicesSchema = createServicesSchema
+.partial()
+.refine((data) => Object.keys(data).length > 0, {
+  error: "At least one field must be provided for update",
+});
+
 export type CreateServiceInput = z.infer<typeof createServicesSchema>;
+export type UpdateServiceInput = z.infer<typeof updateServicesSchema>;

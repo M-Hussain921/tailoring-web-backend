@@ -1,10 +1,13 @@
 import Service from "../models/services.js";
 import User from "../models/user.js";
 import type { Request, Response } from "express";
-import type { CreateServiceInput } from "../validator/servicesValidator.js";
+import type {
+  CreateServiceInput,
+  UpdateServiceInput,
+} from "../validator/servicesValidator.js";
 
 export const createService = async (
-  req: Request<{},{}, CreateServiceInput>,
+  req: Request<{}, {}, CreateServiceInput>,
   res: Response,
 ): Promise<void> => {
   const { name, slug, description, image, price, features } = req.body;
@@ -32,5 +35,39 @@ export const createService = async (
     });
   } catch (error) {
     res.status(500).json({ message: "Error creating service", error });
+  }
+};
+
+export const updateService = async (
+  req: Request<{ id: string }, {}, UpdateServiceInput>,
+  res: Response,
+): Promise<void> => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+    const existingUser = await User.findById(req.admin?.id);
+    if (!existingUser) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const updatedService = await Service.findByIdAndUpdate(id, updateData, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+
+    if (!updatedService) {
+      res.status(404).json({ message: "Service not found" });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Service updated successfully",
+      service: updatedService,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating service", error });
   }
 };
