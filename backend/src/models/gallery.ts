@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-const ServiceSchema = new mongoose.Schema(
+const GallerySchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       minlength: 3,
-      maxlength: 50,
+      maxlength: 100,
     },
+
     slug: {
       type: String,
       required: true,
@@ -17,60 +17,78 @@ const ServiceSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+
     description: {
       type: String,
-      required: true,
       trim: true,
-      minlength: 10,
+      maxlength: 300,
     },
+
     image: {
       url: {
         type: String,
         required: true,
       },
+
       publicId: {
         type: String,
         required: true,
       },
     },
-    price: {
-      type: Number,
+
+    category: {
+      type: String,
       required: true,
-      min: 0,
+      enum: ["shirt", "pant", "kurta", "suit", "sherwani", "blazer", "other"],
+      lowercase: true,
+      trim: true,
     },
-    features: {
+
+    tags: {
       type: [String],
-      required: true,
+      default: [],
       validate: {
         validator: (value: string[]) => {
-          return (
-            value.length >= 1 &&
-            value.every((feature) => feature.trim().length > 0)
-          );
+          return value.every((tag) => tag.trim().length > 0);
         },
-        message: "{PATH} must have at least one feature",
+        message: "{PATH} cannot contain empty tags",
       },
     },
+
+    altText: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 150,
+    },
+
     isFeatured: {
       type: Boolean,
-      default: true,
+      default: false,
     },
+
     isActive: {
       type: Boolean,
       default: true,
     },
-    deactivatedAt: {
-      type: Date,
-      default: null,
+
+    displayOrder: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
-    createdBy:{
+
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    }
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
-const Service = mongoose.model("Service", ServiceSchema);
-export default Service;
+const Gallery = mongoose.model("Gallery", GallerySchema);
+
+export default Gallery;

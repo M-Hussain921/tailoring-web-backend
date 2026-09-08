@@ -6,6 +6,7 @@ import { connectDB } from "./config/mongoClient.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import servicesRoutes from "./routes/servicesRoutes.js";
+import galleryRoutes from "./routes/galleryRoutes.js";
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/service", servicesRoutes);
+app.use("/api/gallery",galleryRoutes);
 
 let port = process.env["PORT"] || 3000;
 
