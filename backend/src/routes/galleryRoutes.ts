@@ -3,19 +3,28 @@ import {
   createGallery,
   deleteGallery,
   updateGallery,
+  getGallery,
+  getGalleryById,
+  getGalleryByCategory
 } from "../controllers/galleryController.js";
 
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
-import { validateParams, validateRequest } from "../middleware/validateMiddleware.js";
+import { validateParams, validateRequest, validateQuery } from "../middleware/validateMiddleware.js";
 
 import {
   createGallerySchema,
   updateGallerySchema,
   galleryIdSchema,
+  galleryQuerySchema
 } from "../validator/galleryValidator.js";
 
 const router = express.Router();
+
+router.get(
+  "/",
+  getGallery,
+);
 
 router.post(
   "/create-gallery",
@@ -23,6 +32,18 @@ router.post(
   isAdmin,
   validateRequest(createGallerySchema),
   createGallery,
+);
+
+router.get(
+  "/",
+  validateQuery(galleryQuerySchema),
+  getGalleryByCategory,
+);
+
+router.get(
+  "/:id",
+  validateParams(galleryIdSchema),
+  getGalleryById,
 );
 
 router.patch(

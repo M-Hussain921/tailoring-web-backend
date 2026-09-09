@@ -88,6 +88,26 @@ export const galleryIdSchema = z.object({
   }),
 });
 
+export const galleryQuerySchema = z.object({
+  category: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .pipe(
+      z.enum([
+        "shirt",
+        "pant",
+        "kurta",
+        "suit",
+        "sherwani",
+        "blazer",
+        "other",
+      ]),
+    )
+    .optional(),
+});
+
 export type CreateGalleryInput = z.infer<typeof createGallerySchema>;
 export type UpdateGalleryInput = z.infer<typeof updateGallerySchema>;
 export type GalleryIdInput = z.infer<typeof galleryIdSchema>;
+export type GalleryQueryInput = z.infer<typeof galleryQuerySchema>;

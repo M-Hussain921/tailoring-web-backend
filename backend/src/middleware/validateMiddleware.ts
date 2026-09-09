@@ -35,3 +35,20 @@ export const validateParams = <T>(schema: ZodType<T>) => {
     next();
   };
 };
+
+export const validateQuery = <T>(schema: ZodType<T>) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.query);
+
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid Query Parameters",
+        errors: result.error.issues,
+      });
+      return;
+    }
+
+    next();
+  };
+};

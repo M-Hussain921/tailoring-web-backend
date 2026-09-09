@@ -4,6 +4,7 @@ import type {
   CreateGalleryInput,
   UpdateGalleryInput,
   GalleryIdInput,
+  GalleryQueryInput
 } from "../validator/galleryValidator.js";
 import { MongoServerError } from "mongodb";
 
@@ -140,5 +141,96 @@ export const deleteGallery = async (
     });
   } catch (error) {
     res.status(500).json({ message: "Error deleting gallery", error });
+  }
+};
+
+export const getGallery = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const gallerys = await Gallery.find({
+      isActive: true,
+    }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: gallerys.length,
+      gallerys,
+    });
+  } catch (error: unknown) {
+    console.error("Error fetching gallerys:", error);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching gallerys" });
+  }
+};
+
+export const getGalleryByCategory = async (
+  req: Request<{}, {}, {}, GalleryQueryInput>,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { category } = req.query;
+
+   const filter = {
+      isActive: true,
+      ...(category && { category }),
+    };
+
+    const gallery = await Gallery.find(filter).sort({
+      displayOrder: 1,
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: gallery.length,
+      gallery,
+    });
+  } catch (error: unknown) {
+    console.error("Error fetching gallery:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error fetching gallery",
+    });
+  }
+};
+
+export const getGalleryById = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    const gallery = await Gallery.findOne({
+      _id: id,
+      isActive: true,
+    });
+
+    if (!gallery) {
+      res.status(404).json({
+        success: false,
+        message: "Gallery not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      gallery,
+    });
+  } catch (error: unknown) {
+    console.error("Error fetching gallery:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error fetching gallery",
+    });
   }
 };

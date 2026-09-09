@@ -19,7 +19,7 @@ import {
 const router = express.Router();
 
 router.get(
-  "all-service",
+  "/",
   getServices,
 )
 
