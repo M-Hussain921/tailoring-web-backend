@@ -3,6 +3,8 @@ import {
   createService,
   updateService,
   deleteService,
+  getServices,
+  getServiceById
 } from "../controllers/servicesController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
@@ -16,12 +18,23 @@ import {
 
 const router = express.Router();
 
+router.get(
+  "all-service",
+  getServices,
+)
+
 router.post(
   "/create-service",
   verifyToken,
   isAdmin,
   validateRequest(createServicesSchema),
   createService,
+);
+
+router.get(
+  "/:id",
+  validateParams(serviceIdSchema),
+  getServiceById,
 );
 
 router.put(

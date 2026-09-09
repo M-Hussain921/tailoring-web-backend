@@ -93,3 +93,63 @@ export const deleteService = async (
     res.status(500).json({ message: "Error deleting service", error });
   }
 };
+
+export const getServices = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const services = await Service.find({
+      isActive: true,
+    }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: services.length,
+      services,
+    });
+  } catch (error: unknown) {
+    console.error("Error fetching services:", error);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching services" });
+  }
+};
+
+export const getServiceById = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    const service = await Service.findOne({
+      _id: id,
+      isActive: true,
+    });
+
+    if (!service) {
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      service,
+    });
+    
+  } catch (error: unknown) {
+    console.error("Error fetching service:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error fetching service",
+    });
+  }
+};
