@@ -37,7 +37,7 @@ router.delete(
   "/delete-service/:id",
   verifyToken,
   isAdmin,
-  validateRequest(serviceIdSchema),
+  validateParams(serviceIdSchema),
   deleteService,
 );
 

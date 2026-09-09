@@ -1,5 +1,4 @@
 import Service from "../models/services.js";
-import User from "../models/user.js";
 import type { Request, Response } from "express";
 import type {
   CreateServiceInput,
@@ -13,12 +12,6 @@ export const createService = async (
 ): Promise<void> => {
   const { name, slug, description, image, price, features } = req.body;
   try {
-    const existingUser = await User.findById(req.admin?.id);
-    if (!existingUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
     const newService = new Service({
       name,
       slug,
@@ -47,12 +40,6 @@ export const updateService = async (
   const updateData = req.body;
 
   try {
-    const existingUser = await User.findById(req.admin?.id);
-    if (!existingUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
     const updatedService = await Service.findByIdAndUpdate(id, updateData, {
       returnDocument: "after",
       runValidators: true,
@@ -79,22 +66,23 @@ export const deleteService = async (
 ): Promise<void> => {
   const { id } = req.params;
   try {
-    const existingUser = await User.findById(req.admin?.id);
-    if (!existingUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
-    const deletedService = await Service.findById(id);
+    const deletedService = await Service.findById(
+      id,
+      {
+        $set: {
+          isActive: false,
+          deactivatedAt: new Date(),
+        },
+      },
+      {
+        returnDocument: "after",
+      },
+    );
 
     if (!deletedService) {
       res.status(404).json({ message: "Service not found" });
       return;
     }
-
-    deletedService.isActive = false;
-    deletedService.deactivatedAt = new Date();
-    await deletedService.save();
 
     res.status(200).json({
       success: true,

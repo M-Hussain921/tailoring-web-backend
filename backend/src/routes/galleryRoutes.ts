@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createGallery,
+  deleteGallery,
   updateGallery,
 } from "../controllers/galleryController.js";
 
@@ -32,4 +33,13 @@ router.patch(
   validateRequest(updateGallerySchema),
   updateGallery,
 );
+
+router.delete(
+  "/delete-gallery/:id",
+  verifyToken,
+  isAdmin,
+  validateParams(galleryIdSchema),
+  deleteGallery,
+);
+
 export default router;
