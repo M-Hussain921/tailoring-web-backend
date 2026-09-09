@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import type {
   CreateGalleryInput,
   UpdateGalleryInput,
+  GalleryIdInput
 } from "../validator/galleryValidator.js";
 import { MongoServerError } from "mongodb";
 
@@ -106,3 +107,31 @@ export const updateGallery = async (
     });
   }
 };
+
+export const deleteService = async (
+  req: Request<GalleryIdInput>,
+  res: Response,
+): Promise<void> => {
+  const { id } = req.params;
+  try {
+    const deletedGallery = await Gallery.findById(id);
+
+    if (!deletedGallery) {
+      res.status(404).json({ message: "Service not found" });
+      return;
+    }
+
+    deletedGallery.isActive = false;
+    deletedGallery.deactivatedAt = new Date();
+    await deletedGallery.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Gallery deleted successfully",
+      service: deletedGallery,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting gallery", error });
+  }
+};
+

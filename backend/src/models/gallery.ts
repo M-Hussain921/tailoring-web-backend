@@ -72,6 +72,11 @@ const GallerySchema = new mongoose.Schema(
       default: true,
     },
 
+    deactivatedAt: {
+      type: Date,
+      default: null,
+    },
+
     displayOrder: {
       type: Number,
       default: 0,

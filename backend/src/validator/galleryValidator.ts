@@ -90,4 +90,4 @@ export const galleryIdSchema = z.object({
 
 export type CreateGalleryInput = z.infer<typeof createGallerySchema>;
 export type UpdateGalleryInput = z.infer<typeof updateGallerySchema>;
-export type GalleryIdSchema = z.infer<typeof galleryIdSchema>;
+export type GalleryIdInput = z.infer<typeof galleryIdSchema>;
