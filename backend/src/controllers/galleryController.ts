@@ -1,6 +1,9 @@
 import Gallery from "../models/gallery.js";
 import type { Request, Response } from "express";
-import type { CreateGalleryInput } from "../validator/galleryValidator.js";
+import type {
+  CreateGalleryInput,
+  UpdateGalleryInput,
+} from "../validator/galleryValidator.js";
 import { MongoServerError } from "mongodb";
 
 export const createGallery = async (
@@ -42,6 +45,52 @@ export const createGallery = async (
     });
   } catch (error: unknown) {
     console.error("Error creating gallery:", error);
+
+    if (error instanceof MongoServerError && error.code === 11000) {
+      res.status(409).json({
+        success: false,
+        message: "Gallery with this title or slug already exists",
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateGallery = async (
+  req: Request<{ id: string }, {}, UpdateGalleryInput>,
+  res: Response,
+): Promise<void> => {
+  const { id } = req.params;
+  const updateData = req.body;
+  try {
+    const updatedGallery = await Gallery.findByIdAndUpdate(
+      id,
+      {
+        $set: updateData,
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    );
+
+    if (!updatedGallery) {
+      res.status(404).json({ message: "Gallery not found" });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Gallery updated successfully",
+      service: updatedGallery,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating gallery", error });
 
     if (error instanceof MongoServerError && error.code === 11000) {
       res.status(409).json({

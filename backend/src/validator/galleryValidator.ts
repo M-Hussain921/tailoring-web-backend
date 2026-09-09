@@ -76,4 +76,18 @@ export const createGallerySchema = z
   })
   .strict();
 
+export const updateGallerySchema = createGallerySchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    error: "At least one field must be provided for update",
+  });
+
+export const galleryIdSchema = z.object({
+  id: z.string().regex(/^[a-f\d]{24}$/i, {
+    error: "Invalid service ID",
+  }),
+});
+
 export type CreateGalleryInput = z.infer<typeof createGallerySchema>;
+export type UpdateGalleryInput = z.infer<typeof updateGallerySchema>;
+export type GalleryIdSchema = z.infer<typeof galleryIdSchema>;

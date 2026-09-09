@@ -1,13 +1,17 @@
 import express from "express";
 import {
-  createGallery
+  createGallery,
+  updateGallery,
 } from "../controllers/galleryController.js";
+
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
+import { validateParams, validateRequest } from "../middleware/validateMiddleware.js";
 
-import { validateRequest } from "../middleware/validateMiddleware.js";
 import {
-  createGallerySchema
+  createGallerySchema,
+  updateGallerySchema,
+  galleryIdSchema,
 } from "../validator/galleryValidator.js";
 
 const router = express.Router();
@@ -20,4 +24,12 @@ router.post(
   createGallery,
 );
 
+router.patch(
+  "/update-gallery/:id",
+  verifyToken,
+  isAdmin,
+  validateParams(galleryIdSchema),
+  validateRequest(updateGallerySchema),
+  updateGallery,
+);
 export default router;
