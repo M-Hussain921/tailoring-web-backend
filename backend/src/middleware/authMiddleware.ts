@@ -32,7 +32,7 @@ export const verifyToken = (
       role: string;
     };
 
-    req.admin = decoded;
+    req.user = decoded;
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid or expired token" });
