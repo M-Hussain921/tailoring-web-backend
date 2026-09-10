@@ -53,7 +53,7 @@ export const approveReview = async (
       return;
     }
 
-    if (!req.admin?.id) {
+    if (!req.user?.id) {
       res.status(401).json({
         success: false,
         message: "Unauthorized",
@@ -71,7 +71,7 @@ export const approveReview = async (
 
     review.status = "approved";
     review.approvedAt = new Date();
-    review.approvedBy = new mongoose.Types.ObjectId(req.admin.id);
+    review.approvedBy = new mongoose.Types.ObjectId(req.user?.id);
 
     await review.save();
 

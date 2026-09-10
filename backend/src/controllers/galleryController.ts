@@ -37,7 +37,7 @@ export const createGallery = async (
       ...(displayOrder !== undefined && { displayOrder }),
       ...(isFeatured !== undefined && { isFeatured }),
       ...(isActive !== undefined && { isActive }),
-      createdBy: req.admin!.id,
+      createdBy: req.user!.id,
     });
 
     res.status(201).json({
