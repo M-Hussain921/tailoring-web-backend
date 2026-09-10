@@ -36,6 +36,8 @@ router.get(
 
 router.get(
   "/pending",
+  verifyToken,
+  isAdmin,
   getAllPendingReviews,
 );
 
