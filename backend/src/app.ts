@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 
 import authRoutes from "./routes/authRoutes.js";
 import servicesRoutes from "./routes/servicesRoutes.js";
@@ -9,6 +10,7 @@ import { errorHandler } from "./middleware/errorMiddleware.js";
 
 const app = express();
 
+app.use(helmet());
 app.use(express.json());
 
 app.get("/", (req, res) => {
