@@ -1,5 +1,5 @@
 import Service from "../models/services.js";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type {
   CreateServiceInput,
   UpdateServiceInput,
@@ -9,6 +9,7 @@ import type {
 export const createService = async (
   req: Request<{}, {}, CreateServiceInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { name, slug, description, image, price, features } = req.body;
   try {
@@ -28,13 +29,14 @@ export const createService = async (
       service: savedService,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error creating service", error });
+    next(error);
   }
 };
 
 export const updateService = async (
   req: Request<{ id: string }, {}, UpdateServiceInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
   const updateData = req.body;
@@ -56,13 +58,14 @@ export const updateService = async (
       service: updatedService,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error updating service", error });
+    next(error);
   }
 };
 
 export const deleteService = async (
   req: Request<ServiceIdInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
   try {
@@ -90,13 +93,14 @@ export const deleteService = async (
       service: deletedService,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting service", error });
+    next(error);
   }
 };
 
 export const getServices = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const services = await Service.find({
@@ -110,18 +114,15 @@ export const getServices = async (
       count: services.length,
       services,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching services:", error);
-
-    res
-      .status(500)
-      .json({ success: false, message: "Error fetching services" });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getServiceById = async (
   req: Request<{ id: string }>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -143,13 +144,7 @@ export const getServiceById = async (
       success: true,
       service,
     });
-    
-  } catch (error: unknown) {
-    console.error("Error fetching service:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching service",
-    });
+  } catch (error) {
+    next(error);
   }
 };

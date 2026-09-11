@@ -1,12 +1,13 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import User from "../models/user.js";
 import AdminInvite from "../models/adminInvite.js";
 
 export const inviteAdmin = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { email } = req.body;
@@ -66,18 +67,15 @@ export const inviteAdmin = async (
 
       invitationToken: rawToken,
     });
-  } catch (error: unknown) {
-    console.error("Error inviting admin:", error);
-
-    res.status(500).json({
-      message: "Internal server error",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const acceptAdminInvite = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { token, username, password } = req.body;
@@ -145,11 +143,7 @@ export const acceptAdminInvite = async (
         role: admin.role,
       },
     });
-  } catch (error: unknown) {
-    console.error("Error accepting admin invitation:", error);
-
-    res.status(500).json({
-      message: "Internal server error",
-    });
+  } catch (error) {
+    next(error);
   }
 };

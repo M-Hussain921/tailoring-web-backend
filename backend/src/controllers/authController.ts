@@ -1,12 +1,13 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type { LoginInput } from "../validator/authValidator.js";
 
 export const login = async (
   req: Request<{}, {}, LoginInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { identifier, password } = req.body;
   try {
@@ -41,8 +42,7 @@ export const login = async (
         role: user.role,
       },
     });
-  } catch (error: unknown) {
-    console.error("Error logging in user:", error);
-    res.status(500).json({ message: "Internal server error" });
+  } catch (error) {
+    next(error);
   }
 };

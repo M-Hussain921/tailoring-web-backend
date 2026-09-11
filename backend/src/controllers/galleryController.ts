@@ -1,16 +1,16 @@
 import Gallery from "../models/gallery.js";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type {
   CreateGalleryInput,
   UpdateGalleryInput,
   GalleryIdInput,
-  GalleryQueryInput
+  GalleryQueryInput,
 } from "../validator/galleryValidator.js";
-import { MongoServerError } from "mongodb";
 
 export const createGallery = async (
   req: Request<{}, {}, CreateGalleryInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const {
     title,
@@ -45,27 +45,15 @@ export const createGallery = async (
       message: "Gallery created successfully",
       gallery,
     });
-  } catch (error: unknown) {
-    console.error("Error creating gallery:", error);
-
-    if (error instanceof MongoServerError && error.code === 11000) {
-      res.status(409).json({
-        success: false,
-        message: "Gallery with this title or slug already exists",
-      });
-      return;
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const updateGallery = async (
   req: Request<{ id: string }, {}, UpdateGalleryInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
   const updateData = req.body;
@@ -92,26 +80,14 @@ export const updateGallery = async (
       service: updatedGallery,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error updating gallery", error });
-
-    if (error instanceof MongoServerError && error.code === 11000) {
-      res.status(409).json({
-        success: false,
-        message: "Gallery with this title or slug already exists",
-      });
-      return;
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
 export const deleteGallery = async (
   req: Request<GalleryIdInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -140,13 +116,14 @@ export const deleteGallery = async (
       service: deletedGallery,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting gallery", error });
+    next(error);
   }
 };
 
 export const getGallery = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const gallerys = await Gallery.find({
@@ -160,23 +137,20 @@ export const getGallery = async (
       count: gallerys.length,
       gallerys,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching gallerys:", error);
-
-    res
-      .status(500)
-      .json({ success: false, message: "Error fetching gallerys" });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getGalleryByCategory = async (
   req: Request<{}, {}, {}, GalleryQueryInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { category } = req.query;
 
-   const filter = {
+    const filter = {
       isActive: true,
       ...(category && { category }),
     };
@@ -191,19 +165,15 @@ export const getGalleryByCategory = async (
       count: gallery.length,
       gallery,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching gallery:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching gallery",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getGalleryById = async (
   req: Request<{ id: string }>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -225,12 +195,7 @@ export const getGalleryById = async (
       success: true,
       gallery,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching gallery:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching gallery",
-    });
+  } catch (error) {
+    next(error);
   }
 };

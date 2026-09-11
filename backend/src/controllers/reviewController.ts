@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import Review from "../models/review.js";
 import type {
@@ -9,6 +9,7 @@ import type {
 export const createReview = async (
   req: Request<{}, {}, CreateReviewInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { customerName, rating, comment } = req.body;
 
@@ -26,19 +27,15 @@ export const createReview = async (
       message: "Review submitted successfully",
       review,
     });
-  } catch (error: unknown) {
-    console.error("Error creating review:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error creating review",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const approveReview = async (
   req: Request<ReviewIdInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -80,19 +77,15 @@ export const approveReview = async (
       message: "Review approved successfully",
       review,
     });
-  } catch (error: unknown) {
-    console.error("Error approving review:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error approving review",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const rejectReview = async (
   req: Request<ReviewIdInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -126,19 +119,15 @@ export const rejectReview = async (
       message: "Review rejected successfully",
       review,
     });
-  } catch (error: unknown) {
-    console.error("Error rejecting review:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error rejecting review",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getAllReviews = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const reviews = await Review.find()
@@ -152,19 +141,15 @@ export const getAllReviews = async (
       count: reviews.length,
       reviews,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching reviews:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching reviews",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getReviewById = async (
   req: Request<ReviewIdInput>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
 
@@ -186,19 +171,15 @@ export const getReviewById = async (
       success: true,
       review,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching review:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching review",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getAllApprovedReviews = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const reviews = await Review.find({
@@ -212,19 +193,15 @@ export const getAllApprovedReviews = async (
       count: reviews.length,
       reviews,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching approved reviews:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching approved reviews",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getAllPendingReviews = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const reviews = await Review.find({
@@ -238,12 +215,7 @@ export const getAllPendingReviews = async (
       count: reviews.length,
       reviews,
     });
-  } catch (error: unknown) {
-    console.error("Error fetching pending reviews:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Error fetching pending reviews",
-    });
+  } catch (error) {
+    next(error);
   }
 };
