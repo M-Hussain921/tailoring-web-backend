@@ -7,10 +7,11 @@ import {
   loginSchema,
   acceptAdminInviteSchema,
 } from "../validator/authValidator.js";
+import { loginRateLimiter } from "../handler/ratelimit.js";
 
 const router = express.Router();
 
-router.post("/login", validateRequest(loginSchema), login);
+router.post("/login", loginRateLimiter, validateRequest(loginSchema), login);
 
 router.post(
   "/admin/accept-invite",
