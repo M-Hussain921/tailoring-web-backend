@@ -1,6 +1,13 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 
+type UserRole = "admin"|"developer";
+
+interface jwrPayload {
+  id: string;
+  role: UserRole;
+}
+
 export const verifyToken = (
   req: Request,
   res: Response,
@@ -27,10 +34,7 @@ export const verifyToken = (
       throw new Error("JWT_SECRET is not defined in .env");
     }
 
-    const decoded = jwt.verify(token, secret) as {
-      id: string;
-      role: string;
-    };
+    const decoded = jwt.verify(token, secret) as jwrPayload;
 
     req.user = decoded;
     next();
