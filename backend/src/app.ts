@@ -1,5 +1,6 @@
 import express from "express";
 import helmet from "helmet";
+import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
 import servicesRoutes from "./routes/servicesRoutes.js";
@@ -11,6 +12,7 @@ import { errorHandler } from "./middleware/errorMiddleware.js";
 const app = express();
 
 app.use(helmet());
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
