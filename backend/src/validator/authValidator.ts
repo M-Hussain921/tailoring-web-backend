@@ -41,14 +41,14 @@ export const registerSchema = z.object({
     }),
 });
 
-export const loginSchema = z.object({ 
+export const loginSchema = z.object({
   identifier: z
     .string()
     .trim()
     .min(1, {
       error: "Email or phone number is required",
     })
-     .transform((value) => {
+    .transform((value) => {
       if (/^[6-9]\d{9}$/.test(value)) {
         return `+91${value}`;
       }
@@ -59,6 +59,22 @@ export const loginSchema = z.object({
   password: z.string().min(1, {
     error: "Password is required",
   }),
+});
+
+export const acceptAdminInviteSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, {
+      error: "Username must be at least 3 characters long",
+    })
+    .max(30, {
+      error: "Username must be at most 30 characters long",
+    }),
+  token: z.string().trim().min(1, { error: "Invitation token is required" }),
+  password: z
+    .string()
+    .min(8, { error: "Password must be at least 8 characters" }),
 });
 
 export const updateUserSchema = z.object({
@@ -106,6 +122,8 @@ export const changePasswordSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+export type acceptAdminInviteInput = z.infer<typeof acceptAdminInviteSchema>;
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
