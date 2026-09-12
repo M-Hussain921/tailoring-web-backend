@@ -121,7 +121,7 @@ export const deleteGallery = async (
 };
 
 export const getGallery = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {

@@ -5,9 +5,9 @@ import mongoose from "mongoose";
 
 export const errorHandler = (
   error: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ): void => {
   console.error(error);
 

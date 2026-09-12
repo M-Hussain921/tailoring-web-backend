@@ -125,7 +125,7 @@ export const rejectReview = async (
 };
 
 export const getAllReviews = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
@@ -177,7 +177,7 @@ export const getReviewById = async (
 };
 
 export const getAllApprovedReviews = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
@@ -199,7 +199,7 @@ export const getAllApprovedReviews = async (
 };
 
 export const getAllPendingReviews = async (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
