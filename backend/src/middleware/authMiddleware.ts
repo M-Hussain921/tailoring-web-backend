@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
+import { env } from "../config/env.js";
 
 type UserRole = "admin"|"developer";
 
@@ -29,7 +30,7 @@ export const verifyToken = (
   }
 
   try {
-    const secret = process.env["JWT_SECRET"] as string;
+    const secret = env.JWT_SECRET;
     if (!secret) {
       throw new Error("JWT_SECRET is not defined in .env");
     }
