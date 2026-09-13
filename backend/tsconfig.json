@@ -9,7 +9,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -21,11 +20,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": true,
-    "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
+    "moduleDetection": "force"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "scripts"]
