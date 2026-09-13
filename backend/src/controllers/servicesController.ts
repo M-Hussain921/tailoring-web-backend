@@ -5,19 +5,37 @@ import type {
   UpdateServiceInput,
   ServiceIdInput,
 } from "../validator/servicesValidator.js";
+import { uploadToCloudinary } from "../utils/cloudinaryUpload.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const createService = async (
   req: Request<{}, {}, CreateServiceInput>,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  const { name, slug, description, image, price, features } = req.body;
+  const { name, slug, description, price, features } = req.body;
+
+  if (!req.file) {
+    res.status(400).json({
+      message: "Image is required",
+    });
+    return;
+  }
+
   try {
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      "ansari-tailor/gallery",
+    );
+
     const newService = new Service({
       name,
       slug,
       description,
-      image,
+      image: {
+        imageUrl: result.secure_url,
+        publicId: result.public_id,
+      },
       price,
       features,
     });
@@ -39,9 +57,41 @@ export const updateService = async (
   next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
-  const updateData = req.body;
+  const updateData: Partial<UpdateServiceInput> & {
+    image?: {
+      imageUrl: string;
+      publicId: string;
+    };
+  } = {
+    ...req.body,
+  };
 
   try {
+    const service = await Service.findById(id);
+
+    if (!service) {
+      res.status(404).json({
+        message: "Service not found",
+      });
+      return;
+    }
+
+    let oldPublicId: string | undefined;
+
+    if (req.file) {
+      oldPublicId = service?.image?.publicId;
+
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        "ansari-tailor/gallery",
+      );
+
+      updateData.image = {
+        imageUrl: result.secure_url,
+        publicId: result.public_id,
+      };
+    }
+
     const updatedService = await Service.findByIdAndUpdate(id, updateData, {
       returnDocument: "after",
       runValidators: true,
@@ -50,6 +100,10 @@ export const updateService = async (
     if (!updatedService) {
       res.status(404).json({ message: "Service not found" });
       return;
+    }
+
+    if (oldPublicId) {
+      await cloudinary.uploader.destroy(oldPublicId);
     }
 
     res.status(200).json({

@@ -31,14 +31,6 @@ export const createServicesSchema = z.object({
     .max(200, {
       error: "Description cannot exceed 200 characters",
     }),
-  image: z.object({
-    url: z.url({
-      error: "Please enter a valid URL for the image",
-    }),
-    publicId: z.string().trim().min(1, {
-      error: "Image Public ID is required",
-    }),
-  }),
   price: z.number().min(0, {
     error: "Price must be a positive number",
   }),

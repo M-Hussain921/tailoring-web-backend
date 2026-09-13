@@ -7,6 +7,9 @@ import type {
   GalleryQueryInput,
 } from "../validator/galleryValidator.js";
 
+import { uploadToCloudinary } from "../utils/cloudinaryUpload.js";
+import cloudinary from "../config/cloudinary.js";
+
 export const createGallery = async (
   req: Request<{}, {}, CreateGalleryInput>,
   res: Response,
@@ -16,7 +19,6 @@ export const createGallery = async (
     title,
     slug,
     description,
-    image,
     category,
     tags,
     altText,
@@ -26,11 +28,26 @@ export const createGallery = async (
   } = req.body;
 
   try {
+    if (!req.file) {
+      res.status(400).json({
+        message: "Image is required",
+      });
+      return;
+    }
+
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      "ansari-tailor/gallery",
+    );
+
     const gallery = await Gallery.create({
       title,
       slug,
       description,
-      image,
+      image: {
+        imageUrl: result.secure_url,
+        publicId: result.public_id,
+      },
       category,
       tags,
       altText,
@@ -56,8 +73,41 @@ export const updateGallery = async (
   next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
-  const updateData = req.body;
+  const updateData: Partial<UpdateGalleryInput> & {
+    image?: {
+      imageUrl: string;
+      publicId: string;
+    };
+  } = {
+    ...req.body,
+  };
+
   try {
+    const gallery = await Gallery.findById(id);
+
+    if (!gallery) {
+      res.status(404).json({
+        message: "Gallery not found",
+      });
+      return;
+    }
+
+    let oldPublicId: string | undefined;
+
+    if (req.file) {
+      oldPublicId = gallery?.image?.publicId;
+
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        "ansari-tailor/gallery",
+      );
+
+      updateData.image = {
+        imageUrl: result.secure_url,
+        publicId: result.public_id,
+      };
+    }
+
     const updatedGallery = await Gallery.findByIdAndUpdate(
       id,
       {
@@ -72,6 +122,10 @@ export const updateGallery = async (
     if (!updatedGallery) {
       res.status(404).json({ message: "Gallery not found" });
       return;
+    }
+
+    if (oldPublicId) {
+      await cloudinary.uploader.destroy(oldPublicId);
     }
 
     res.status(200).json({

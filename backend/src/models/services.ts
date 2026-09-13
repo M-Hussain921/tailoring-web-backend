@@ -24,13 +24,15 @@ const ServiceSchema = new mongoose.Schema(
       minlength: 10,
     },
     image: {
-      url: {
+      imageUrl: {
         type: String,
         required: true,
+        trim: true,
       },
       publicId: {
         type: String,
         required: true,
+        trim: true,
       },
     },
     price: {
@@ -63,11 +65,11 @@ const ServiceSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    createdBy:{
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    }
+    },
   },
   { timestamps: true },
 );

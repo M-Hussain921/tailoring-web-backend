@@ -25,14 +25,15 @@ const GallerySchema = new mongoose.Schema(
     },
 
     image: {
-      url: {
+      imageUrl: {
         type: String,
         required: true,
+        trim: true,
       },
-
       publicId: {
         type: String,
         required: true,
+        trim: true,
       },
     },
 

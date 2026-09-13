@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+const booleanFromFormData = z
+  .string()
+  .refine((value) => value === "true" || value === "false", {
+    error: "Value must be true or false",
+  })
+  .transform((value) => value === "true");
+
 export const createGallerySchema = z
   .object({
     title: z
@@ -27,14 +34,6 @@ export const createGallerySchema = z
     description: z.string().trim().max(300, {
       error: "Description must be at most 300 characters long",
     }),
-    image: z.object({
-      url: z.url({
-        error: "Please enter a valid URL for the image",
-      }),
-      publicId: z.string().trim().min(1, {
-        error: "Image Public ID is required",
-      }),
-    }),
     category: z
       .string()
       .trim()
@@ -51,18 +50,34 @@ export const createGallerySchema = z
         ]),
       ),
     tags: z
-      .array(
-        z.string().trim().min(1, {
-          error: "tag cannot be empty",
-        }),
-      )
-      .min(1, {
-        error: "At least one tag is required",
-      }),
+      .string()
+      .transform((value, ctx) => {
+        try {
+          return JSON.parse(value);
+        } catch {
+          ctx.addIssue({
+            code: "custom",
+            message: "Tags must be a valid JSON array",
+          });
+
+          return z.NEVER;
+        }
+      })
+      .pipe(
+        z
+          .array(
+            z.string().trim().min(1, {
+              error: "Tag cannot be empty",
+            }),
+          )
+          .min(1, {
+            error: "At least one tag is required",
+          }),
+      ),
     altText: z.string().trim().max(150, {
       error: "altText cannot exceed 150 characters",
     }),
-    displayOrder: z
+    displayOrder: z.coerce
       .number()
       .int({
         error: "Display order must be an integer",
@@ -71,8 +86,8 @@ export const createGallerySchema = z
         error: "Display order cannot be negative",
       })
       .optional(),
-    isFeatured: z.boolean().optional(),
-    isActive: z.boolean().optional(),
+    isFeatured: booleanFromFormData.optional(),
+    isActive: booleanFromFormData.optional(),
   })
   .strict();
 
@@ -94,15 +109,7 @@ export const galleryQuerySchema = z.object({
     .trim()
     .toLowerCase()
     .pipe(
-      z.enum([
-        "shirt",
-        "pant",
-        "kurta",
-        "suit",
-        "sherwani",
-        "blazer",
-        "other",
-      ]),
+      z.enum(["shirt", "pant", "kurta", "suit", "sherwani", "blazer", "other"]),
     )
     .optional(),
 });

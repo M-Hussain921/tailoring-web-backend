@@ -10,6 +10,7 @@ import {
 
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
+import { upload } from "../middleware/uploadMiddlewate.js";
 import { validateParams, validateRequest, validateQuery } from "../middleware/validateMiddleware.js";
 
 import {
@@ -30,6 +31,7 @@ router.post(
   "/create-gallery",
   verifyToken,
   isAdmin,
+  upload.single("image"),
   validateRequest(createGallerySchema),
   createGallery,
 );
