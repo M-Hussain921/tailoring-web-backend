@@ -25,7 +25,7 @@ export const createService = async (
   try {
     const result = await uploadToCloudinary(
       req.file.buffer,
-      "ansari-tailor/gallery",
+      "ansari-tailor/services",
     );
 
     const newService = new Service({
@@ -38,6 +38,7 @@ export const createService = async (
       },
       price,
       features,
+      createdBy: req.user!.id,
     });
 
     const savedService = await newService.save();
@@ -57,6 +58,7 @@ export const updateService = async (
   next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
+
   const updateData: Partial<UpdateServiceInput> & {
     image?: {
       imageUrl: string;
@@ -66,25 +68,29 @@ export const updateService = async (
     ...req.body,
   };
 
+  let oldPublicId: string | undefined;
+  let newPublicId: string | undefined;
+
   try {
     const service = await Service.findById(id);
 
     if (!service) {
       res.status(404).json({
+        success: false,
         message: "Service not found",
       });
       return;
     }
-
-    let oldPublicId: string | undefined;
 
     if (req.file) {
       oldPublicId = service?.image?.publicId;
 
       const result = await uploadToCloudinary(
         req.file.buffer,
-        "ansari-tailor/gallery",
+        "ansari-tailor/services",
       );
+
+      newPublicId = result.public_id;
 
       updateData.image = {
         imageUrl: result.secure_url,
@@ -92,18 +98,36 @@ export const updateService = async (
       };
     }
 
-    const updatedService = await Service.findByIdAndUpdate(id, updateData, {
-      returnDocument: "after",
-      runValidators: true,
-    });
+    const updatedService = await Service.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    );
 
     if (!updatedService) {
-      res.status(404).json({ message: "Service not found" });
+      if (newPublicId) {
+        await cloudinary.uploader.destroy(newPublicId);
+      }
+
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
       return;
     }
 
     if (oldPublicId) {
-      await cloudinary.uploader.destroy(oldPublicId);
+      try {
+        await cloudinary.uploader.destroy(oldPublicId);
+      } catch (error) {
+        console.error(
+          "Failed to delete old service image:",
+          error,
+        );
+      }
     }
 
     res.status(200).json({
@@ -112,6 +136,17 @@ export const updateService = async (
       service: updatedService,
     });
   } catch (error) {
+    if (newPublicId) {
+      try {
+        await cloudinary.uploader.destroy(newPublicId);
+      } catch (cleanupError) {
+        console.error(
+          "Failed to clean up new Cloudinary image:",
+          cleanupError,
+        );
+      }
+    }
+
     next(error);
   }
 };
@@ -123,7 +158,7 @@ export const deleteService = async (
 ): Promise<void> => {
   const { id } = req.params;
   try {
-    const deletedService = await Service.findById(
+    const deletedService = await Service.findByIdAndUpdate(
       id,
       {
         $set: {

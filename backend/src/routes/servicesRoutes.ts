@@ -1,15 +1,22 @@
 import express from "express";
+
 import {
   createService,
   updateService,
   deleteService,
   getServices,
-  getServiceById
+  getServiceById,
 } from "../controllers/servicesController.js";
+
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
+import { upload } from "../middleware/uploadMiddlewate.js";
 
-import { validateParams, validateRequest } from "../middleware/validateMiddleware.js";
+import {
+  validateParams,
+  validateRequest,
+} from "../middleware/validateMiddleware.js";
+
 import {
   createServicesSchema,
   updateServicesSchema,
@@ -18,15 +25,13 @@ import {
 
 const router = express.Router();
 
-router.get(
-  "/",
-  getServices,
-)
+router.get("/", getServices);
 
 router.post(
   "/create-service",
   verifyToken,
   isAdmin,
+  upload.single("image"),
   validateRequest(createServicesSchema),
   createService,
 );
@@ -41,6 +46,7 @@ router.put(
   "/update-service/:id",
   verifyToken,
   isAdmin,
+  upload.single("image"),
   validateParams(serviceIdSchema),
   validateRequest(updateServicesSchema),
   updateService,
