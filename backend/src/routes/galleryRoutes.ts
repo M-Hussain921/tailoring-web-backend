@@ -52,6 +52,7 @@ router.patch(
   "/update-gallery/:id",
   verifyToken,
   isAdmin,
+  upload.single("image"),
   validateParams(galleryIdSchema),
   validateRequest(updateGallerySchema),
   updateGallery,

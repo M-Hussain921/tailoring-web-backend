@@ -73,6 +73,7 @@ export const updateGallery = async (
   next: NextFunction,
 ): Promise<void> => {
   const { id } = req.params;
+
   const updateData: Partial<UpdateGalleryInput> & {
     image?: {
       imageUrl: string;
@@ -82,25 +83,29 @@ export const updateGallery = async (
     ...req.body,
   };
 
+  let oldPublicId: string | undefined;
+  let newPublicId: string | undefined;
+
   try {
     const gallery = await Gallery.findById(id);
 
     if (!gallery) {
       res.status(404).json({
-        message: "Gallery not found",
+        success: false,
+        message: "gallery not found",
       });
       return;
     }
-
-    let oldPublicId: string | undefined;
 
     if (req.file) {
       oldPublicId = gallery?.image?.publicId;
 
       const result = await uploadToCloudinary(
         req.file.buffer,
-        "ansari-tailor/gallery",
+        "ansari-tailor/gallerys",
       );
+
+      newPublicId = result.public_id;
 
       updateData.image = {
         imageUrl: result.secure_url,
@@ -110,9 +115,7 @@ export const updateGallery = async (
 
     const updatedGallery = await Gallery.findByIdAndUpdate(
       id,
-      {
-        $set: updateData,
-      },
+      { $set: updateData },
       {
         returnDocument: "after",
         runValidators: true,
@@ -120,12 +123,23 @@ export const updateGallery = async (
     );
 
     if (!updatedGallery) {
-      res.status(404).json({ message: "Gallery not found" });
+      if (newPublicId) {
+        await cloudinary.uploader.destroy(newPublicId);
+      }
+
+      res.status(404).json({
+        success: false,
+        message: "Gallery not found",
+      });
       return;
     }
 
     if (oldPublicId) {
-      await cloudinary.uploader.destroy(oldPublicId);
+      try {
+        await cloudinary.uploader.destroy(oldPublicId);
+      } catch (error) {
+        console.error("Failed to delete old gallery image:", error);
+      }
     }
 
     res.status(200).json({
@@ -134,6 +148,14 @@ export const updateGallery = async (
       service: updatedGallery,
     });
   } catch (error) {
+    if (newPublicId) {
+      try {
+        await cloudinary.uploader.destroy(newPublicId);
+      } catch (cleanupError) {
+        console.error("Failed to clean up new Cloudinary image:", cleanupError);
+      }
+    }
+
     next(error);
   }
 };
